@@ -9,12 +9,11 @@ Install from NuGet:
 Install-Package Masking.Serilog
 ```
 
-Mark properties to ignore:
+Mark properties to mask:
 
 ```csharp
 Log.Logger = new LoggerConfiguration()
     .Destructure.ByMaskingProperties("Email", "Password")
-    // Other logger configurationg
     .CreateLogger()
 ```
 
@@ -28,11 +27,10 @@ Log.Logger = new LoggerConfiguration()
         opts.PropertyNames.Add("Token");
         opts.Mask = "******";
     })
-    // Other logger configurationg
     .CreateLogger()
 ```
 
-When types are destructured, named properties will be covered up with mask:
+When types are destructured, listed properties will be covered up with mask:
 
 ```csharp
 Log.Information("Logged on {@User}", new User { Username = "sudo", Password = "SuperAdmin" });
