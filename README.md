@@ -1,7 +1,7 @@
 # Masking.Serilog 🎭
 Masking sensitive information during logging to Serilog by hiding individual properties.
 
-[![Build status](https://ci.appveyor.com/api/projects/status/xk06hxqd7powev5v?svg=true)](https://ci.appveyor.com/project/evjenio/masking-serilog)
+[![Build status](https://ci.appveyor.com/api/projects/status/a68pglg77ixl8qoq?svg=true)](https://ci.appveyor.com/project/evjenio/masking-serilog)
 
 Install from NuGet:
 
