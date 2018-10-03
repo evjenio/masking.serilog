@@ -26,7 +26,7 @@ Log.Logger = new LoggerConfiguration()
     {
         opts.PropertyNames.Add("Hash");
         opts.PropertyNames.Add("Token");
-        opts.Mask = "*removed*";
+        opts.Mask = "******";
     })
     // Other logger configurationg
     .CreateLogger()
