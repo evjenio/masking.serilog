@@ -2,17 +2,15 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard1.0</TargetFramework>
-    <VersionPrefix>1.0.0</VersionPrefix>
     <PackageId>Masking.Serilog</PackageId>
     <Authors>evjenio</Authors>
     <Title>Masking.Serilog</Title>
     <Description>Masking sensitive information during logging to Serilog by hiding individual properties.</Description>
     <PackageProjectUrl>https://github.com/evjenio/masking.serilog</PackageProjectUrl>
     <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
-    <PackageTags>serilog</PackageTags>
+    <PackageTags>serilog log</PackageTags>
     <AssemblyName>Masking.Serilog</AssemblyName>
     <RootNamespace>Masking.Serilog</RootNamespace>
-    <GenerateAssemblyVersionAttribute>true</GenerateAssemblyVersionAttribute>
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
   </PropertyGroup>
 
