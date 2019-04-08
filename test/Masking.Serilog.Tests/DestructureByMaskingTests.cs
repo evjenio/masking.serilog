@@ -4,6 +4,7 @@ using NUnit.Framework;
 using Serilog;
 using Serilog.Events;
 using Masking.Serilog.Tests.Support;
+using System.Collections.Generic;
 
 namespace Masking.Serilog.Tests
 {
@@ -49,14 +50,14 @@ namespace Masking.Serilog.Tests
             var ignored = new Complex
             {
                 HashData = new DestructMe
-                    { Hash = 1234 }
+                { Hash = 1234 }
             };
 
             log.Information("Here is {@Ignored}", ignored);
 
-            var sv = (StructureValue)evt.Properties["Ignored"];
-            var props = sv.Properties.ToDictionary(p => p.Name, p => p.Value);
+            var props = GetPropsFromEvent("Ignored", evt);
             var hashData = ((StructureValue)props["HashData"]).Properties.ToDictionary(p => p.Name, p => p.Value);
+
             Assert.AreEqual("*removed*", hashData["Hash"].LiteralValue());
         }
 
@@ -80,8 +81,7 @@ namespace Masking.Serilog.Tests
 
             log.Information("Here is {@Ignored}", ignored);
 
-            var sv = (StructureValue)evt.Properties["Ignored"];
-            var props = sv.Properties.ToDictionary(p => p.Name, p => p.Value);
+            var props = GetPropsFromEvent("Ignored", evt);
 
             Assert.AreEqual(2, props["Id"].LiteralValue());
             Assert.AreEqual("Name", props["Name"].LiteralValue());
@@ -107,11 +107,56 @@ namespace Masking.Serilog.Tests
 
             log.Information("Here is {@Ignored}", ignored);
 
-            var sv = (StructureValue)evt.Properties["Ignored"];
-            var props = sv.Properties.ToDictionary(p => p.Name, p => p.Value);
+            var props = GetPropsFromEvent("Ignored", evt);
 
             Assert.AreEqual(2, props["Id"].LiteralValue());
             Assert.AreEqual("******", props["Hash"].LiteralValue());
+        }
+
+        [Test]
+        public void IntIndexedPropertyNamesDoesNotBreakWhenDestructuring()
+        {
+            LogEvent evt = null;
+
+            var log = new LoggerConfiguration()
+                .Destructure.ByMaskingProperties("password", "secret")
+                .WriteTo.Sink(new DelegatingSink(e => evt = e))
+                .CreateLogger();
+
+            var data = new IntIndexed();
+            data[0] = "boo";
+
+            log.Information("Here is {@data}", data);
+
+            var props = GetPropsFromEvent("data", evt);
+
+            Assert.IsNull(props["Item"].LiteralValue());
+        }
+
+        [Test]
+        public void StringIndexedPropertyNamesDoesNotBreakWhenDestructuring()
+        {
+            LogEvent evt = null;
+
+            var log = new LoggerConfiguration()
+                .Destructure.ByMaskingProperties("password", "secret")
+                .WriteTo.Sink(new DelegatingSink(e => evt = e))
+                .CreateLogger();
+
+            var data = new StringIndexed();
+            data["woo"] = "boo";
+
+            log.Information("Here is {@data}", data);
+
+            var props = GetPropsFromEvent("data", evt);
+
+            Assert.IsNull(props["Item"].LiteralValue());
+        }
+
+        private static Dictionary<string, LogEventPropertyValue> GetPropsFromEvent(string name, LogEvent evt)
+        {
+            var sv = (StructureValue)evt.Properties[name];
+            return sv.Properties.ToDictionary(p => p.Name, p => p.Value);
         }
 
         private struct DestructMe
@@ -131,6 +176,26 @@ namespace Masking.Serilog.Tests
             public string Name { get; set; }
             public string Password { get; set; }
             public int Secret { get; set; }
+        }
+
+        private class StringIndexed
+        {
+            public string this[string index]
+            {
+                get { return indexed[index]; }
+                set { indexed[index] = value; }
+            }
+            private Dictionary<string, string> indexed = new Dictionary<string, string>();
+        }
+
+        private class IntIndexed
+        {
+            public string this[int index]
+            {
+                get { return indexed[index]; }
+                set { indexed[index] = value; }
+            }
+            private string[] indexed = new string[20];
         }
 
         private class DestructureMeWithPropertyWithOnlySetter

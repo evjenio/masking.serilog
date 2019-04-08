@@ -53,6 +53,10 @@ namespace Masking.Serilog.ByMasking
         {
             try
             {
+                if (pi.GetIndexParameters().Any())
+                {
+                    return null;
+                }
                 return pi.GetValue(o);
             }
             catch (TargetInvocationException ex)

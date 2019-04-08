@@ -13,7 +13,7 @@ Mark properties to mask:
 
 ```csharp
 Log.Logger = new LoggerConfiguration()
-    .Destructure.ByMaskingProperties("Email", "Password")
+    .Destructure.ByMaskingProperties("Password", "Token")
     .CreateLogger()
 ```
 
@@ -23,7 +23,7 @@ or
 Log.Logger = new LoggerConfiguration()
     .Destructure.ByMaskingProperties(opts =>
     {
-        opts.PropertyNames.Add("Hash");
+        opts.PropertyNames.Add("Password");
         opts.PropertyNames.Add("Token");
         opts.Mask = "******";
     })
