@@ -153,10 +153,53 @@ namespace Masking.Serilog.Tests
             Assert.IsNull(props["Item"].LiteralValue());
         }
 
+        [Test]
+        public void PropertyNamesOfTypesInCollectionsAreMaskedWhenDestructuring()
+        {
+            LogEvent evt = null;
+
+            var log = new LoggerConfiguration()
+                .Destructure.ByMaskingProperties("password", "secret")
+                .WriteTo.Sink(new DelegatingSink(e => evt = e))
+                .CreateLogger();
+
+            var ignored = new[] {
+                new DestructureMe
+                {
+                    Id = 2,
+                    Name = "Name",
+                    Password = "Password",
+                    Secret = 25673433
+                }
+            };
+
+            log.Information("Here is {@Ignored}", ignored);
+
+            var props = GetPropsFromEvent("Ignored", evt);
+
+            Assert.AreEqual(2, props["Id"].LiteralValue());
+            Assert.AreEqual("Name", props["Name"].LiteralValue());
+            Assert.AreEqual("******", props["Password"].LiteralValue());
+            Assert.AreEqual("******", props["Secret"].LiteralValue());
+        }
+
         private static Dictionary<string, LogEventPropertyValue> GetPropsFromEvent(string name, LogEvent evt)
         {
-            var sv = (StructureValue)evt.Properties[name];
-            return sv.Properties.ToDictionary(p => p.Name, p => p.Value);
+            Dictionary<string, LogEventPropertyValue> result = null;
+
+            if (evt.Properties[name] is StructureValue structureValue)
+            {
+                result = structureValue.Properties.ToDictionary(p => p.Name, p => p.Value);
+            }
+            else if (evt.Properties[name] is SequenceValue sequenceValue)
+            {
+                result = sequenceValue.Elements
+                    .OfType<StructureValue>()
+                    .SelectMany(v => v.Properties)
+                    .ToDictionary(p => p.Name, p => p.Value);
+            }
+
+            return result;
         }
 
         private struct DestructMe

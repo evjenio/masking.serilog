@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -33,7 +34,7 @@ namespace Masking.Serilog.ByMasking
 
         public bool TryDestructure(object value, ILogEventPropertyValueFactory propertyValueFactory, out LogEventPropertyValue result)
         {
-            if (value == null)
+            if (value == null || value is IEnumerable)
             {
                 result = null;
                 return false;
