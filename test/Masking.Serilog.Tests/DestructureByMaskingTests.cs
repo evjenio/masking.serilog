@@ -71,6 +71,8 @@ namespace Masking.Serilog.Tests
                 .WriteTo.Sink(new DelegatingSink(e => evt = e))
                 .CreateLogger();
 
+            DestructureMe.StaticProp = 1337;
+
             var ignored = new DestructureMe
             {
                 Id = 2,
@@ -83,10 +85,11 @@ namespace Masking.Serilog.Tests
 
             var props = GetPropsFromEvent("Ignored", evt);
 
-            Assert.AreEqual(2, props["Id"].LiteralValue());
-            Assert.AreEqual("Name", props["Name"].LiteralValue());
-            Assert.AreEqual("******", props["Password"].LiteralValue());
-            Assert.AreEqual("******", props["Secret"].LiteralValue());
+            Assert.AreEqual(2, props[nameof(DestructureMe.Id)].LiteralValue());
+            Assert.AreEqual("Name", props[nameof(DestructureMe.Name)].LiteralValue());
+            Assert.AreEqual("******", props[nameof(DestructureMe.Password)].LiteralValue());
+            Assert.AreEqual("******", props[nameof(DestructureMe.Secret)].LiteralValue());
+            Assert.AreEqual(1337, props[nameof(DestructureMe.StaticProp)].LiteralValue());
         }
 
         [Test]
@@ -109,8 +112,8 @@ namespace Masking.Serilog.Tests
 
             var props = GetPropsFromEvent("Ignored", evt);
 
-            Assert.AreEqual(2, props["Id"].LiteralValue());
-            Assert.AreEqual("******", props["Hash"].LiteralValue());
+            Assert.AreEqual(2, props[nameof(DestructMe.Id)].LiteralValue());
+            Assert.AreEqual("******", props[nameof(DestructMe.Hash)].LiteralValue());
         }
 
         [Test]
@@ -177,10 +180,45 @@ namespace Masking.Serilog.Tests
 
             var props = GetPropsFromEvent("Ignored", evt);
 
-            Assert.AreEqual(2, props["Id"].LiteralValue());
-            Assert.AreEqual("Name", props["Name"].LiteralValue());
-            Assert.AreEqual("******", props["Password"].LiteralValue());
-            Assert.AreEqual("******", props["Secret"].LiteralValue());
+            Assert.AreEqual(2, props[nameof(DestructureMe.Id)].LiteralValue());
+            Assert.AreEqual("Name", props[nameof(DestructureMe.Name)].LiteralValue());
+            Assert.AreEqual("******", props[nameof(DestructureMe.Password)].LiteralValue());
+            Assert.AreEqual("******", props[nameof(DestructureMe.Secret)].LiteralValue());
+        }
+
+        [Test]
+        public void ValuesOfStaticPropertiesAreNotIncluded()
+        {
+            LogEvent evt = null;
+
+            var log = new LoggerConfiguration()
+                .Destructure.ByMaskingProperties(opts =>
+                {
+                    opts.ExcludeStaticProperties = true;
+                    opts.PropertyNames.AddRange(new[] { "password", "secret" });
+                })
+                .WriteTo.Sink(new DelegatingSink(e => evt = e))
+                .CreateLogger();
+
+            DestructureMe.StaticProp = 1337;
+
+            var ignored = new DestructureMe
+            {
+                Id = 2,
+                Name = "Name",
+                Password = "Password",
+                Secret = 25673433
+            };
+
+            log.Information("Here is {@Ignored}", ignored);
+
+            var props = GetPropsFromEvent("Ignored", evt);
+
+            Assert.AreEqual(2, props[nameof(DestructureMe.Id)].LiteralValue());
+            Assert.AreEqual("Name", props[nameof(DestructureMe.Name)].LiteralValue());
+            Assert.AreEqual("******", props[nameof(DestructureMe.Password)].LiteralValue());
+            Assert.AreEqual("******", props[nameof(DestructureMe.Secret)].LiteralValue());
+            Assert.IsFalse(props.ContainsKey(nameof(DestructureMe.StaticProp)), $"{nameof(props)} contains the key {nameof(DestructureMe.StaticProp)}.");
         }
 
         private static Dictionary<string, LogEventPropertyValue> GetPropsFromEvent(string name, LogEvent evt)
@@ -219,6 +257,7 @@ namespace Masking.Serilog.Tests
             public string Name { get; set; }
             public string Password { get; set; }
             public int Secret { get; set; }
+            public static int StaticProp { get; set; }
         }
 
         private class StringIndexed

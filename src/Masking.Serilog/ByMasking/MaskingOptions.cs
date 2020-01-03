@@ -29,5 +29,10 @@ namespace Masking.Serilog.ByMasking
         /// List of property names to hide from log.
         /// </summary>
         public List<string> PropertyNames { get; } = new List<string>();
+
+        /// <summary>
+        /// A flag to specify whether static properties should be included when Destructuring the object.
+        /// </summary>
+        public bool ExcludeStaticProperties { get; set; } = false;
     }
 }
