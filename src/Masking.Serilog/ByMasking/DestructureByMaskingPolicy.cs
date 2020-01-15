@@ -12,13 +12,12 @@ namespace Masking.Serilog.ByMasking
     internal class DestructureByMaskingPolicy : IDestructuringPolicy
     {
         private readonly IDictionary<Type, CachedProperties> cache = new Dictionary<Type, CachedProperties>();
-        private readonly string mask = "******";
-        private readonly IEnumerable<string> maskedProperties;
+        private readonly MaskingOptions maskingOptions = new MaskingOptions();        
         private readonly object sync = new object();
 
         public DestructureByMaskingPolicy(params string[] maskedProperties)
         {
-            this.maskedProperties = maskedProperties;
+            maskingOptions.PropertyNames.AddRange(maskedProperties);
         }
 
         public DestructureByMaskingPolicy(MaskingOptions opts)
@@ -28,8 +27,7 @@ namespace Masking.Serilog.ByMasking
                 throw new ArgumentNullException(nameof(opts));
             }
 
-            maskedProperties = opts.PropertyNames;
-            mask = opts.Mask;
+            maskingOptions = opts;
         }
 
         public bool TryDestructure(object value, ILogEventPropertyValueFactory propertyValueFactory, out LogEventPropertyValue result)
@@ -78,13 +76,20 @@ namespace Masking.Serilog.ByMasking
                 }
             }
 
-            PropertyInfo[] includedProps = type.GetRuntimeProperties()
-                .Where(p => p.CanRead)
+            var typeProperties = type.GetRuntimeProperties()
+                .Where(p => p.CanRead);
+
+            if (maskingOptions.ExcludeStaticProperties)
+            {
+                typeProperties = typeProperties
+                    .Where(p => !p.GetMethod.IsStatic);
+            }
+            
+            PropertyInfo[] includedProps = typeProperties
                 .Where(p => !ShouldMask(p))
                 .ToArray();
 
-            PropertyInfo[] maskedProps = type.GetRuntimeProperties()
-                .Where(p => p.CanRead)
+            PropertyInfo[] maskedProps = typeProperties
                 .Where(p => ShouldMask(p))
                 .ToArray();
 
@@ -97,7 +102,7 @@ namespace Masking.Serilog.ByMasking
             return entry;
         }
 
-        private bool ShouldMask(PropertyInfo p) => maskedProperties.Contains(p.Name, StringComparer.OrdinalIgnoreCase);
+        private bool ShouldMask(PropertyInfo p) => maskingOptions.PropertyNames.Contains(p.Name, StringComparer.OrdinalIgnoreCase);
 
         private LogEventPropertyValue Structure(object o, ILogEventPropertyValueFactory propertyValueFactory)
         {
@@ -115,7 +120,7 @@ namespace Masking.Serilog.ByMasking
 
             foreach (var p in cached.ToMask)
             {
-                var logEventPropertyValue = BuildLogEventProperty(mask, propertyValueFactory);
+                var logEventPropertyValue = BuildLogEventProperty(maskingOptions.Mask, propertyValueFactory);
                 structureProperties.Add(new LogEventProperty(p.Name, logEventPropertyValue));
             }
 
