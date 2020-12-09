@@ -53,6 +53,6 @@ Log.Logger = new LoggerConfiguration()
     .CreateLogger()
 ```
 
-please note that this is an explicit whitelist implementation, this helps to avoid mistakes resulting in exposure of sensitive data.
+Please note that this is an explicit whitelist implementation, this helps to avoid mistakes resulting in exposure of sensitive data.
 
 
