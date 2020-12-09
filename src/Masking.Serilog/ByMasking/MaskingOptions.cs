@@ -36,7 +36,7 @@ namespace Masking.Serilog.ByMasking
         public bool ExcludeStaticProperties { get; set; } = false;
         
         /// <summary>
-        /// List of name spaces for which masking is ignored.
+        /// List of namespaces for which masking will be ignored.
         /// </summary>
         public List<string> Namespaces { get; } = new List<string>();
     }
