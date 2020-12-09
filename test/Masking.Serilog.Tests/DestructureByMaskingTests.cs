@@ -5,6 +5,8 @@ using Serilog;
 using Serilog.Events;
 using Masking.Serilog.Tests.Support;
 using System.Collections.Generic;
+using Masking.Serilog.Tests.Support.Models;
+using Masking.Serilog.Tests.Support.Models.Ignore;
 
 namespace Masking.Serilog.Tests
 {
@@ -239,59 +241,40 @@ namespace Masking.Serilog.Tests
 
             return result;
         }
-
-        private struct DestructMe
+        
+        [Test]
+        public void PropertyNamesOfTypesInCollectionsAreNotMaskedIfTheNameSpaceIsIgnoredWhenDestructuring()
         {
-            public int Id { get; set; }
-            public int Hash { get; set; }
-        }
+            LogEvent evt = null;
 
-        private class Complex
-        {
-            public DestructMe HashData { get; set; }
-        }
+            var log = new LoggerConfiguration()
+                .Destructure.ByMaskingProperties(opts =>
+                {
+                    opts.PropertyNames.Add("password");
+                    opts.PropertyNames.Add("secret");
+                    opts.Namespaces.Add("Masking.Serilog.Tests.Support.Models.Ignore");
+                })
+                .WriteTo.Sink(new DelegatingSink(e => evt = e))
+                .CreateLogger();
 
-        private class DestructureMe
-        {
-            public int Id { get; set; }
-            public string Name { get; set; }
-            public string Password { get; set; }
-            public int Secret { get; set; }
-            public static int StaticProp { get; set; }
-        }
+            var ignored = new[] {
+                new DestructureMeButIgnored
+                {
+                    Id = 2,
+                    Name = "Name",
+                    Password = "Password",
+                    Secret = 25673433
+                }
+            };
 
-        private class StringIndexed
-        {
-            public string this[string index]
-            {
-                get { return indexed[index]; }
-                set { indexed[index] = value; }
-            }
-            private Dictionary<string, string> indexed = new Dictionary<string, string>();
-        }
+            log.Information("Here is {@Ignored}", ignored);
 
-        private class IntIndexed
-        {
-            public string this[int index]
-            {
-                get { return indexed[index]; }
-                set { indexed[index] = value; }
-            }
-            private string[] indexed = new string[20];
-        }
+            var props = GetPropsFromEvent("Ignored", evt);
 
-        private class DestructureMeWithPropertyWithOnlySetter
-        {
-            private string onlySetter;
-            public int Id { get; set; }
-            public string Name { get; set; }
-
-            public string OnlySetter
-            {
-                set => onlySetter = value;
-            }
-
-            public string Password { get; set; }
+            Assert.AreEqual(2, props[nameof(DestructureMeButIgnored.Id)].LiteralValue());
+            Assert.AreEqual("Name", props[nameof(DestructureMeButIgnored.Name)].LiteralValue());
+            Assert.AreEqual("Password", props[nameof(DestructureMeButIgnored.Password)].LiteralValue());
+            Assert.AreEqual(25673433, props[nameof(DestructureMeButIgnored.Secret)].LiteralValue());
         }
     }
 }

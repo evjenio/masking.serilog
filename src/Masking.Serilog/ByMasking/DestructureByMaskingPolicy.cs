@@ -11,7 +11,7 @@ namespace Masking.Serilog.ByMasking
 {
     internal class DestructureByMaskingPolicy : IDestructuringPolicy
     {
-        private readonly IDictionary<Type, CachedProperties> cache = new Dictionary<Type, CachedProperties>();
+        private readonly IDictionary<Type, Properties> cache = new Dictionary<Type, Properties>();
         private readonly MaskingOptions maskingOptions = new MaskingOptions();        
         private readonly object sync = new object();
 
@@ -22,12 +22,7 @@ namespace Masking.Serilog.ByMasking
 
         public DestructureByMaskingPolicy(MaskingOptions opts)
         {
-            if (opts == null)
-            {
-                throw new ArgumentNullException(nameof(opts));
-            }
-
-            maskingOptions = opts;
+            maskingOptions = opts ?? throw new ArgumentNullException(nameof(opts));
         }
 
         public bool TryDestructure(object value, ILogEventPropertyValueFactory propertyValueFactory, out LogEventPropertyValue result)
@@ -65,9 +60,20 @@ namespace Masking.Serilog.ByMasking
             }
         }
 
-        private CachedProperties GetCachedProperties(Type type)
+        private static Properties GetProperties(Type type)
         {
-            CachedProperties entry;
+            IEnumerable<PropertyInfo> typeProperties = type.GetRuntimeProperties()
+                .Where(p => p.CanRead);
+            
+            var entry = new Properties(typeProperties.ToArray(), new PropertyInfo[]{});
+
+            return entry;
+        }
+        
+        private Properties GetCachedProperties(Type type)
+        {
+            Properties entry;
+            
             lock (sync)
             {
                 if (cache.TryGetValue(type, out entry))
@@ -76,7 +82,7 @@ namespace Masking.Serilog.ByMasking
                 }
             }
 
-            var typeProperties = type.GetRuntimeProperties()
+            IEnumerable<PropertyInfo> typeProperties = type.GetRuntimeProperties()
                 .Where(p => p.CanRead);
 
             if (maskingOptions.ExcludeStaticProperties)
@@ -93,7 +99,8 @@ namespace Masking.Serilog.ByMasking
                 .Where(p => ShouldMask(p))
                 .ToArray();
 
-            entry = new CachedProperties(includedProps, maskedProps);
+            entry = new Properties(includedProps, maskedProps);
+            
             lock (sync)
             {
                 cache[type] = entry;
@@ -103,22 +110,25 @@ namespace Masking.Serilog.ByMasking
         }
 
         private bool ShouldMask(PropertyInfo p) => maskingOptions.PropertyNames.Contains(p.Name, StringComparer.OrdinalIgnoreCase);
-
+        
+        private bool ShouldIgnoreMasking(Type t) => maskingOptions.Namespaces.Contains(t.Namespace, StringComparer.OrdinalIgnoreCase);
+        
         private LogEventPropertyValue Structure(object o, ILogEventPropertyValueFactory propertyValueFactory)
         {
             var structureProperties = new List<LogEventProperty>();
 
             var type = o.GetType();
-            var cached = GetCachedProperties(type);
+            
+            var properties = ShouldIgnoreMasking(type) ? GetProperties(type) : GetCachedProperties(type);
 
-            foreach (var p in cached.ToInclude)
+            foreach (var p in properties.ToInclude)
             {
                 var propertyValue = SafeGetPropertyValue(o, p);
                 var logEventPropertyValue = BuildLogEventProperty(propertyValue, propertyValueFactory);
                 structureProperties.Add(new LogEventProperty(p.Name, logEventPropertyValue));
             }
 
-            foreach (var p in cached.ToMask)
+            foreach (var p in properties.ToMask)
             {
                 var logEventPropertyValue = BuildLogEventProperty(maskingOptions.Mask, propertyValueFactory);
                 structureProperties.Add(new LogEventProperty(p.Name, logEventPropertyValue));
@@ -127,9 +137,9 @@ namespace Masking.Serilog.ByMasking
             return new StructureValue(structureProperties, type.Name);
         }
 
-        private class CachedProperties
+        private class Properties
         {
-            public CachedProperties(PropertyInfo[] toInclude, PropertyInfo[] toMask)
+            public Properties(PropertyInfo[] toInclude, PropertyInfo[] toMask)
             {
                 ToInclude = toInclude;
                 ToMask = toMask;

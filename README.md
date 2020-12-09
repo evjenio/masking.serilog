@@ -38,3 +38,21 @@ Log.Information("Logged on {@User}", new User { Username = "sudo", Password = "S
 // Prints `Logged on User { Username: "sudo", Password: "******" }`
 ```
 
+You can ignore masking for given namespaces by including them within the Masking Options configuration, as shown in the example below. 
+This is especially helpful when dealing with complex objects which often results in performance issues.
+
+```csharp
+Log.Logger = new LoggerConfiguration()
+    .Destructure.ByMaskingProperties(opts =>
+    {
+        opts.PropertyNames.Add("Password");
+        opts.PropertyNames.Add("Token");
+        opts.Mask = "******";
+        opts.Namespaces.Add("System.Net.Http");
+    })
+    .CreateLogger()
+```
+
+please note that this is an explicit whitelist implementation, this helps to avoid mistakes resulting in exposure of sensitive data.
+
+

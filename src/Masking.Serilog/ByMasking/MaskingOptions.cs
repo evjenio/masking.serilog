@@ -34,5 +34,10 @@ namespace Masking.Serilog.ByMasking
         /// A flag to specify whether static properties should be included when Destructuring the object.
         /// </summary>
         public bool ExcludeStaticProperties { get; set; } = false;
+        
+        /// <summary>
+        /// List of name spaces for which masking is ignored.
+        /// </summary>
+        public List<string> Namespaces { get; } = new List<string>();
     }
 }
