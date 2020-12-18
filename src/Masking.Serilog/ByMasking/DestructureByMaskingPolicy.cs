@@ -111,7 +111,7 @@ namespace Masking.Serilog.ByMasking
 
         private bool ShouldMask(PropertyInfo p) => maskingOptions.PropertyNames.Contains(p.Name, StringComparer.OrdinalIgnoreCase);
         
-        private bool ShouldIgnoreMasking(Type t) => maskingOptions.Namespaces.Contains(t.Namespace, StringComparer.OrdinalIgnoreCase);
+        private bool ShouldIgnoreMasking(Type t) => maskingOptions.IgnoredNamespaces.Contains(t.Namespace, StringComparer.OrdinalIgnoreCase);
         
         private LogEventPropertyValue Structure(object o, ILogEventPropertyValueFactory propertyValueFactory)
         {

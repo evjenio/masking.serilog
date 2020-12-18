@@ -252,7 +252,7 @@ namespace Masking.Serilog.Tests
                 {
                     opts.PropertyNames.Add("password");
                     opts.PropertyNames.Add("secret");
-                    opts.Namespaces.Add("Masking.Serilog.Tests.Support.Models.Ignore");
+                    opts.IgnoredNamespaces.Add("Masking.Serilog.Tests.Support.Models.Ignore");
                 })
                 .WriteTo.Sink(new DelegatingSink(e => evt = e))
                 .CreateLogger();

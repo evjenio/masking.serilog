@@ -38,6 +38,6 @@ namespace Masking.Serilog.ByMasking
         /// <summary>
         /// List of namespaces for which masking will be ignored.
         /// </summary>
-        public List<string> Namespaces { get; } = new List<string>();
+        public List<string> IgnoredNamespaces { get; } = new List<string>();
     }
 }
