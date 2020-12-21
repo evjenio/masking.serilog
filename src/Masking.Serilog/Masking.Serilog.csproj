@@ -8,7 +8,7 @@
     <Title>Masking.Serilog</Title>
     <Description>Masking sensitive information during logging to Serilog by hiding individual properties.</Description>
     <PackageProjectUrl>https://github.com/evjenio/masking.serilog</PackageProjectUrl>
-    <PackageLicenseUrl>http://www.apache.org/licenses/LICENSE-2.0</PackageLicenseUrl>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageTags>serilog log</PackageTags>
     <AssemblyName>Masking.Serilog</AssemblyName>
     <RootNamespace>Masking.Serilog</RootNamespace>
