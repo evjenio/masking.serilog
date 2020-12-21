@@ -48,7 +48,7 @@ Log.Logger = new LoggerConfiguration()
         opts.PropertyNames.Add("Password");
         opts.PropertyNames.Add("Token");
         opts.Mask = "******";
-        opts.Namespaces.Add("System.Net.Http");
+        opts.IgnoredNamespaces.Add("System.Net.Http");
     })
     .CreateLogger()
 ```
