@@ -56,10 +56,10 @@ namespace Masking.Serilog.Tests
 
             log.Information("Here is {@Ignored}", ignored);
 
-            var props = GetPropsFromEvent("Ignored", evt);
-            var hashData = ((StructureValue)props["HashData"]).Properties.ToDictionary(p => p.Name, p => p.Value);
+            var props = evt.GetProps("Ignored");
+            var hashData = ((StructureValue)props[nameof(Complex.HashData)]).Properties.ToDictionary(p => p.Name, p => p.Value);
 
-            Assert.AreEqual("*removed*", hashData["Hash"].LiteralValue());
+            Assert.AreEqual("*removed*", hashData[nameof(DestructMe.Hash)].LiteralValue());
         }
 
         [Test]
@@ -84,7 +84,7 @@ namespace Masking.Serilog.Tests
 
             log.Information("Here is {@Ignored}", ignored);
 
-            var props = GetPropsFromEvent("Ignored", evt);
+            var props = evt.GetProps("Ignored");
 
             Assert.AreEqual(2, props[nameof(DestructureMe.Id)].LiteralValue());
             Assert.AreEqual("Name", props[nameof(DestructureMe.Name)].LiteralValue());
@@ -111,7 +111,7 @@ namespace Masking.Serilog.Tests
 
             log.Information("Here is {@Ignored}", ignored);
 
-            var props = GetPropsFromEvent("Ignored", evt);
+            var props = evt.GetProps("Ignored");
 
             Assert.AreEqual(2, props[nameof(DestructMe.Id)].LiteralValue());
             Assert.AreEqual("******", props[nameof(DestructMe.Hash)].LiteralValue());
@@ -132,7 +132,7 @@ namespace Masking.Serilog.Tests
 
             log.Information("Here is {@data}", data);
 
-            var props = GetPropsFromEvent("data", evt);
+            var props = evt.GetProps("data");
 
             Assert.IsNull(props["Item"].LiteralValue());
         }
@@ -152,7 +152,7 @@ namespace Masking.Serilog.Tests
 
             log.Information("Here is {@data}", data);
 
-            var props = GetPropsFromEvent("data", evt);
+            var props = evt.GetProps("data");
 
             Assert.IsNull(props["Item"].LiteralValue());
         }
@@ -179,7 +179,7 @@ namespace Masking.Serilog.Tests
 
             log.Information("Here is {@Ignored}", ignored);
 
-            var props = GetPropsFromEvent("Ignored", evt);
+            var props = evt.GetProps("Ignored");
 
             Assert.AreEqual(2, props[nameof(DestructureMe.Id)].LiteralValue());
             Assert.AreEqual("Name", props[nameof(DestructureMe.Name)].LiteralValue());
@@ -213,7 +213,7 @@ namespace Masking.Serilog.Tests
 
             log.Information("Here is {@Ignored}", ignored);
 
-            var props = GetPropsFromEvent("Ignored", evt);
+            var props = evt.GetProps("Ignored");
 
             Assert.AreEqual(2, props[nameof(DestructureMe.Id)].LiteralValue());
             Assert.AreEqual("Name", props[nameof(DestructureMe.Name)].LiteralValue());
@@ -222,24 +222,7 @@ namespace Masking.Serilog.Tests
             Assert.IsFalse(props.ContainsKey(nameof(DestructureMe.StaticProp)), $"{nameof(props)} contains the key {nameof(DestructureMe.StaticProp)}.");
         }
 
-        private static Dictionary<string, LogEventPropertyValue> GetPropsFromEvent(string name, LogEvent evt)
-        {
-            Dictionary<string, LogEventPropertyValue> result = null;
 
-            if (evt.Properties[name] is StructureValue structureValue)
-            {
-                result = structureValue.Properties.ToDictionary(p => p.Name, p => p.Value);
-            }
-            else if (evt.Properties[name] is SequenceValue sequenceValue)
-            {
-                result = sequenceValue.Elements
-                    .OfType<StructureValue>()
-                    .SelectMany(v => v.Properties)
-                    .ToDictionary(p => p.Name, p => p.Value);
-            }
-
-            return result;
-        }
         
         [Test]
         public void PropertyNamesOfTypesInCollectionsAreNotMaskedIfTheNameSpaceIsIgnoredWhenDestructuring()
@@ -251,7 +234,7 @@ namespace Masking.Serilog.Tests
                 {
                     opts.PropertyNames.Add("password");
                     opts.PropertyNames.Add("secret");
-                    opts.IgnoredNamespaces.Add("Masking.Serilog.Tests.Support.Models.Ignore");
+                    opts.IgnoredNamespaces.Add("Masking.Serilog.Tests.Models");
                 })
                 .WriteTo.Sink(new DelegatingSink(e => evt = e))
                 .CreateLogger();
@@ -268,7 +251,7 @@ namespace Masking.Serilog.Tests
 
             log.Information("Here is {@Ignored}", ignored);
 
-            var props = GetPropsFromEvent("Ignored", evt);
+            var props = evt.GetProps("Ignored");
 
             Assert.AreEqual(2, props[nameof(DestructureMeButIgnored.Id)].LiteralValue());
             Assert.AreEqual("Name", props[nameof(DestructureMeButIgnored.Name)].LiteralValue());
