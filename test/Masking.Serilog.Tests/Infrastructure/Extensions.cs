@@ -7,7 +7,7 @@ namespace Masking.Serilog.Tests.Infrastructure
 {
     public static class Extensions
     {
-        public static object LiteralValue(this LogEventPropertyValue @this)
+        public static object ToLiteralValue(this LogEventPropertyValue @this)
         {
             return ((ScalarValue)@this).Value;
         }
@@ -23,5 +23,7 @@ namespace Masking.Serilog.Tests.Infrastructure
 
             return result;
         }
+
+        public static LogEventPropertyValue From(this string name, Dictionary<string, LogEventPropertyValue> props) => props[name];
     }
 }

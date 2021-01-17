@@ -59,7 +59,7 @@ namespace Masking.Serilog.Tests
             var props = evt.GetProps("Ignored");
             var hashData = ((StructureValue)props[nameof(Complex.HashData)]).Properties.ToDictionary(p => p.Name, p => p.Value);
 
-            Assert.AreEqual("*removed*", hashData[nameof(DestructMe.Hash)].LiteralValue());
+            Assert.AreEqual("*removed*", nameof(DestructMe.Hash).From(hashData).ToLiteralValue());
         }
 
         [Test]
@@ -86,11 +86,11 @@ namespace Masking.Serilog.Tests
 
             var props = evt.GetProps("Ignored");
 
-            Assert.AreEqual(2, props[nameof(DestructureMe.Id)].LiteralValue());
-            Assert.AreEqual("Name", props[nameof(DestructureMe.Name)].LiteralValue());
-            Assert.AreEqual("******", props[nameof(DestructureMe.Password)].LiteralValue());
-            Assert.AreEqual("******", props[nameof(DestructureMe.Secret)].LiteralValue());
-            Assert.AreEqual(1337, props[nameof(DestructureMe.StaticProp)].LiteralValue());
+            Assert.AreEqual(2, nameof(DestructureMe.Id).From(props).ToLiteralValue());
+            Assert.AreEqual("Name", nameof(DestructureMe.Name).From(props).ToLiteralValue());
+            Assert.AreEqual("******", nameof(DestructureMe.Password).From(props).ToLiteralValue());
+            Assert.AreEqual("******", nameof(DestructureMe.Secret).From(props).ToLiteralValue());
+            Assert.AreEqual(1337, nameof(DestructureMe.StaticProp).From(props).ToLiteralValue());
         }
 
         [Test]
@@ -113,8 +113,8 @@ namespace Masking.Serilog.Tests
 
             var props = evt.GetProps("Ignored");
 
-            Assert.AreEqual(2, props[nameof(DestructMe.Id)].LiteralValue());
-            Assert.AreEqual("******", props[nameof(DestructMe.Hash)].LiteralValue());
+            Assert.AreEqual(2, nameof(DestructMe.Id).From(props).ToLiteralValue());
+            Assert.AreEqual("******", nameof(DestructMe.Hash).From(props).ToLiteralValue());
         }
 
         [Test]
@@ -127,14 +127,13 @@ namespace Masking.Serilog.Tests
                 .WriteTo.Sink(new DelegatingSink(e => evt = e))
                 .CreateLogger();
 
-            var data = new IntIndexed();
-            data[0] = "boo";
+            var data = new IntIndexed { [0] = "boo" };
 
             log.Information("Here is {@data}", data);
 
             var props = evt.GetProps("data");
 
-            Assert.IsNull(props["Item"].LiteralValue());
+            Assert.IsNull("Item".From(props).ToLiteralValue());
         }
 
         [Test]
@@ -154,7 +153,7 @@ namespace Masking.Serilog.Tests
 
             var props = evt.GetProps("data");
 
-            Assert.IsNull(props["Item"].LiteralValue());
+            Assert.IsNull("Item".From(props).ToLiteralValue());
         }
 
         [Test]
@@ -181,10 +180,10 @@ namespace Masking.Serilog.Tests
 
             var props = evt.GetProps("Ignored");
 
-            Assert.AreEqual(2, props[nameof(DestructureMe.Id)].LiteralValue());
-            Assert.AreEqual("Name", props[nameof(DestructureMe.Name)].LiteralValue());
-            Assert.AreEqual("******", props[nameof(DestructureMe.Password)].LiteralValue());
-            Assert.AreEqual("******", props[nameof(DestructureMe.Secret)].LiteralValue());
+            Assert.AreEqual(2, nameof(DestructureMe.Id).From(props).ToLiteralValue());
+            Assert.AreEqual("Name", nameof(DestructureMe.Name).From(props).ToLiteralValue());
+            Assert.AreEqual("******", nameof(DestructureMe.Password).From(props).ToLiteralValue());
+            Assert.AreEqual("******", nameof(DestructureMe.Secret).From(props).ToLiteralValue());
         }
 
         [Test]
@@ -215,10 +214,10 @@ namespace Masking.Serilog.Tests
 
             var props = evt.GetProps("Ignored");
 
-            Assert.AreEqual(2, props[nameof(DestructureMe.Id)].LiteralValue());
-            Assert.AreEqual("Name", props[nameof(DestructureMe.Name)].LiteralValue());
-            Assert.AreEqual("******", props[nameof(DestructureMe.Password)].LiteralValue());
-            Assert.AreEqual("******", props[nameof(DestructureMe.Secret)].LiteralValue());
+            Assert.AreEqual(2, nameof(DestructureMe.Id).From(props).ToLiteralValue());
+            Assert.AreEqual("Name", nameof(DestructureMe.Name).From(props).ToLiteralValue());
+            Assert.AreEqual("******", nameof(DestructureMe.Password).From(props).ToLiteralValue());
+            Assert.AreEqual("******", nameof(DestructureMe.Secret).From(props).ToLiteralValue());
             Assert.IsFalse(props.ContainsKey(nameof(DestructureMe.StaticProp)), $"{nameof(props)} contains the key {nameof(DestructureMe.StaticProp)}.");
         }
 
@@ -253,10 +252,10 @@ namespace Masking.Serilog.Tests
 
             var props = evt.GetProps("Ignored");
 
-            Assert.AreEqual(2, props[nameof(DestructureMeButIgnored.Id)].LiteralValue());
-            Assert.AreEqual("Name", props[nameof(DestructureMeButIgnored.Name)].LiteralValue());
-            Assert.AreEqual("Password", props[nameof(DestructureMeButIgnored.Password)].LiteralValue());
-            Assert.AreEqual(25673433, props[nameof(DestructureMeButIgnored.Secret)].LiteralValue());
+            Assert.AreEqual(2, nameof(DestructureMeButIgnored.Id).From(props).ToLiteralValue());
+            Assert.AreEqual("Name", nameof(DestructureMeButIgnored.Name).From(props).ToLiteralValue());
+            Assert.AreEqual("Password", nameof(DestructureMeButIgnored.Password).From(props).ToLiteralValue());
+            Assert.AreEqual(25673433, nameof(DestructureMeButIgnored.Secret).From(props).ToLiteralValue());
         }
     }
 }
