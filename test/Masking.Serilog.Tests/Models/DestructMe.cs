@@ -1,4 +1,6 @@
-namespace Masking.Serilog.Tests.Support.Models
+using System;
+
+namespace Masking.Serilog.Tests.Models
 {
     public struct DestructMe
     {

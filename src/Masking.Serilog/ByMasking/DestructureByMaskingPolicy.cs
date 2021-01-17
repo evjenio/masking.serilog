@@ -49,7 +49,8 @@ namespace Masking.Serilog.ByMasking
             {
                 if (pi.GetIndexParameters().Any())
                 {
-                    return null;
+                    SelfLog.WriteLine("The property {0} contains indexed values", pi);
+                    return "Indexed properties is not supported";
                 }
                 return pi.GetValue(o);
             }

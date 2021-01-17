@@ -1,6 +1,7 @@
-﻿using Serilog.Events;
+﻿using System;
+using Serilog.Events;
 
-namespace Masking.Serilog.Tests.Support
+namespace Masking.Serilog.Tests.Infrastructure
 {
     public static class Extensions
     {

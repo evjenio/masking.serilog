@@ -1,6 +1,6 @@
 using System;
 
-namespace Masking.Serilog.Tests.Support.Models.Ignore
+namespace Masking.Serilog.Tests.Models
 {
     public class DestructureMeButIgnored
     {

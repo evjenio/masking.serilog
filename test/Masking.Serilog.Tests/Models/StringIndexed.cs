@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Masking.Serilog.Tests.Support.Models
+namespace Masking.Serilog.Tests.Models
 {
     public class StringIndexed
     {

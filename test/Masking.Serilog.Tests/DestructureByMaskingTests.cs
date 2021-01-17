@@ -3,10 +3,9 @@ using System.Linq;
 using NUnit.Framework;
 using Serilog;
 using Serilog.Events;
-using Masking.Serilog.Tests.Support;
 using System.Collections.Generic;
-using Masking.Serilog.Tests.Support.Models;
-using Masking.Serilog.Tests.Support.Models.Ignore;
+using Masking.Serilog.Tests.Infrastructure;
+using Masking.Serilog.Tests.Models;
 
 namespace Masking.Serilog.Tests
 {

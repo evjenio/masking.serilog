@@ -1,6 +1,6 @@
 using System;
 
-namespace Masking.Serilog.Tests.Support.Models
+namespace Masking.Serilog.Tests.Models
 {
     public class IntIndexed
     {

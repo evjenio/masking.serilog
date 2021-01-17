@@ -3,7 +3,7 @@ using Serilog;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace Masking.Serilog.Tests.Support
+namespace Masking.Serilog.Tests.Infrastructure
 {
     public class DelegatingSink : ILogEventSink
     {
@@ -21,13 +21,13 @@ namespace Masking.Serilog.Tests.Support
 
         public static LogEvent GetLogEvent(Action<ILogger> writeAction)
         {
-            LogEvent result = null;
-            var l = new LoggerConfiguration()
-                .WriteTo.Sink(new DelegatingSink(le => result = le))
+            LogEvent logEvent = null;
+            var loggerConfiguration = new LoggerConfiguration()
+                .WriteTo.Sink(new DelegatingSink(le => logEvent = le))
                 .CreateLogger();
 
-            writeAction(l);
-            return result;
+            writeAction(loggerConfiguration);
+            return logEvent;
         }
     }
 }
