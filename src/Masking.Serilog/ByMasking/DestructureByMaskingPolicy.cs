@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Serilog.Core;
 using Serilog.Debugging;
 using Serilog.Events;
@@ -63,7 +64,7 @@ namespace Masking.Serilog.ByMasking
         private static Properties GetProperties(Type type)
         {
             IEnumerable<PropertyInfo> typeProperties = type.GetRuntimeProperties()
-                .Where(p => p.CanRead);
+                .Where(p => p.CanRead && (p.Name != "EqualityContract" || !p.GetMethod.CustomAttributes.Any(a => a.AttributeType == typeof(CompilerGeneratedAttribute))));
             
             var entry = new Properties(typeProperties.ToArray(), new PropertyInfo[]{});
 
@@ -83,7 +84,7 @@ namespace Masking.Serilog.ByMasking
             }
 
             IEnumerable<PropertyInfo> typeProperties = type.GetRuntimeProperties()
-                .Where(p => p.CanRead);
+                .Where(p => p.CanRead && (p.Name != "EqualityContract" || !p.GetMethod.CustomAttributes.Any(a => a.AttributeType == typeof(CompilerGeneratedAttribute))));
 
             if (maskingOptions.ExcludeStaticProperties)
             {
