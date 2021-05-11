@@ -276,5 +276,36 @@ namespace Masking.Serilog.Tests
             Assert.AreEqual("Password", props[nameof(DestructureMeButIgnored.Password)].LiteralValue());
             Assert.AreEqual(25673433, props[nameof(DestructureMeButIgnored.Secret)].LiteralValue());
         }
+
+        [Test]
+        public void RecordPropertyNamesAreMaskedWhenDestructuring()
+        {
+            LogEvent evt = null;
+
+            var log = new LoggerConfiguration()
+                .Destructure.ByMaskingProperties("password", "secret")
+                .WriteTo.Sink(new DelegatingSink(e => evt = e))
+                .CreateLogger();
+
+            DestructureThisRecord.StaticProp = 1337;
+
+            var ignored = new DestructureThisRecord
+            {
+                Id = 2,
+                Name = "Name",
+                Password = "Password",
+                Secret = 25673433
+            };
+
+            log.Information("Here is {@Ignored}", ignored);
+
+            var props = GetPropsFromEvent("Ignored", evt);
+
+            Assert.AreEqual(2, props[nameof(DestructureThisRecord.Id)].LiteralValue());
+            Assert.AreEqual("Name", props[nameof(DestructureThisRecord.Name)].LiteralValue());
+            Assert.AreEqual("******", props[nameof(DestructureThisRecord.Password)].LiteralValue());
+            Assert.AreEqual("******", props[nameof(DestructureThisRecord.Secret)].LiteralValue());
+            Assert.AreEqual(1337, props[nameof(DestructureThisRecord.StaticProp)].LiteralValue());
+        }
     }
 }
